@@ -1,5 +1,5 @@
 #!/bin/bash
-rm libforttut.a
+rm libforthyd.a
 COMPILER="gfortran"
 COMP_FLAGS="-c -O3"
 LINK_FLAGS="-O3"
@@ -18,42 +18,42 @@ echo "____________________________________________________________"
 ###########################################
 #Compiler to .o files
 echo "compiling to object files..."
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/bspline.f90
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/bsplvb.f
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/bsplvb_cmplx.f
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/dbspline.f90
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/dbsplvb.f90
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/getsplines.f90
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/getdsplines.f90
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/gauleg.f
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/ones.f90
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/zeroes.f90
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/wbmatrix.f90
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/wbmatrixd.f90
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/dbspline.f90
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/glquad.f90
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/integrate.f90
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/legendrep.f90
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/isinf.f90
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/splineends.f90
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/getbsplvbindex.f90
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/getbsplineindex.f90
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/qsort.f90
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/summarizearray.f90
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/get_bsplines.f90
-$COMPILER $COMP_FLAGS ~/Documents/FortranPrograms/get_dbsplines.f90
+$COMPILER $COMP_FLAGS bin/bspline.f90
+$COMPILER $COMP_FLAGS bin/bsplvb.f
+$COMPILER $COMP_FLAGS bin/bsplvb_cmplx.f
+$COMPILER $COMP_FLAGS bin/dbspline.f90
+$COMPILER $COMP_FLAGS bin/dbsplvb.f90
+$COMPILER $COMP_FLAGS bin/getsplines.f90
+$COMPILER $COMP_FLAGS bin/getdsplines.f90
+$COMPILER $COMP_FLAGS bin/gauleg.f
+$COMPILER $COMP_FLAGS bin/ones.f90
+$COMPILER $COMP_FLAGS bin/zeroes.f90
+$COMPILER $COMP_FLAGS bin/wbmatrix.f90
+$COMPILER $COMP_FLAGS bin/wbmatrixd.f90
+$COMPILER $COMP_FLAGS bin/dbspline.f90
+$COMPILER $COMP_FLAGS bin/glquad.f90
+$COMPILER $COMP_FLAGS bin/integrate.f90
+$COMPILER $COMP_FLAGS bin/legendrep.f90
+$COMPILER $COMP_FLAGS bin/isinf.f90
+$COMPILER $COMP_FLAGS bin/splineends.f90
+$COMPILER $COMP_FLAGS bin/getbsplvbindex.f90
+$COMPILER $COMP_FLAGS bin/getbsplineindex.f90
+$COMPILER $COMP_FLAGS bin/qsort.f90
+$COMPILER $COMP_FLAGS bin/summarizearray.f90
+$COMPILER $COMP_FLAGS bin/get_bsplines.f90
+$COMPILER $COMP_FLAGS bin/get_dbsplines.f90
 
 echo "done"
 echo "____________________________________________________________"
 #
-ar rsv libforttut.a *.o
+ar rsv libforthyd.a *.o
 rm *.o
 echo "done"
 echo "____________________________________________________________"
 #
 echo "compiling main and linking..."
 echo "done"
-$COMPILER eigensplines.f90 -L./ -lforttut $LIBRARIES -o $PROGRAM_NAME $LINK_FLAGS
+$COMPILER eigensplines.f90 -L./ -lforthyd $LIBRARIES -o $PROGRAM_NAME $LINK_FLAGS
 #
 echo "Compilation of" $PROGRAM_NAME "finished"
 echo "Size of program:"
