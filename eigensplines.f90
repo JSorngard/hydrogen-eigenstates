@@ -145,7 +145,7 @@ program eigensplines
     do i=0,resolution
         x=lstkntpt*real(i,kind=8)/resolution
         
-        write(out_unit,*) x,",",resum_splines(kntpts,pts,k,nVR(:,n),size(nVR(:,n)),x)**2.d0
+        write(out_unit,*) x,",",resum_splines(kntpts,pts,k,nVR(:,nn),size(nVR(:,nn)),x)**2.d0
     enddo
     close(out_unit)
     !open(unit=out_unit,file="spl.txt",action="write",status="replace")
