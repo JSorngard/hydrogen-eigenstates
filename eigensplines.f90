@@ -2,7 +2,8 @@ program eigensplines
     implicit none
 
     !Variables
-    integer,parameter::k=7,pts=50,neqs=pts-2*(k-1),nsplines=pts-k,n=3,l=0,nqpts=k+1,out_unit=20
+    integer,parameter::l=0,nn=1
+    integer,parameter::k=7,pts=50,neqs=pts-2*(k-1),nsplines=pts-k,n=3,nqpts=k+1,out_unit=20
     real*8,parameter::rb=5.29177211E-11,lstkntptSI=10*rb,lstkntpt=50.,hplanck=6.62607E-34,me=9.109383E-31
     real*8,parameter::pi=3.14159265359,hbar=hplanck/(2*pi),epsilonnaught=8.854E-12,Q=1.6E-19
     integer,parameter::Z=1
@@ -144,7 +145,7 @@ program eigensplines
     do i=0,resolution
         x=lstkntpt*real(i,kind=8)/resolution
         
-        write(out_unit,*) x,",",resum_splines(kntpts,pts,k,nVR(:,1),size(nVR(:,1)),x)**2.d0
+        write(out_unit,*) x,",",resum_splines(kntpts,pts,k,nVR(:,n),size(nVR(:,n)),x)**2.d0
     enddo
     close(out_unit)
     !open(unit=out_unit,file="spl.txt",action="write",status="replace")
