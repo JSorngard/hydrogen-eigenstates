@@ -7,6 +7,7 @@ program eigensplines
     real*8,parameter::rb=5.29177211E-11,lstkntptSI=10*rb,lstkntpt=50.,hplanck=6.62607E-34,me=9.109383E-31
     real*8,parameter::pi=3.14159265359,hbar=hplanck/(2*pi),epsilonnaught=8.854E-12,Q=1.6E-19
     integer,parameter::Z=1
+    logical,parameter::iprint=.false.
     integer::posi,i,j,ii,jj,row,collumn,left,indiff,iii,jjj,INFO,LWORK,resolution
     real*8,dimension(nqpts)::abscissas,weights,dx
     real*8::r,temp,xm,xr,s,a,b,x,b1,b2,db1,db2,temp1,temp2,temp3,kinetic,centrifugal,potential
@@ -25,7 +26,7 @@ program eigensplines
     real*8,dimension(k)::sumstore,indices
     real*8,dimension(k,1)::splinestore,dsplinestore
     real*8,dimension(k,1)::teststore
-    real*8,dimension(k,k)::intstorel,intstorer,matstore,dmatstore
+    real*8,dimension(k,k)::intstorel,intstorer,matstore,dmatstore,dummy
     logical,external::isinf
     integer,external::splinestart,splineend
     real*8,dimension(3)::array1
@@ -52,7 +53,10 @@ program eigensplines
     RHS=0.d0
     preLHS=0.d0
     preRHS=0.d0
-    
+    dummy=0.d0
+    if(iprint) then
+        write(*,*) "Generating equation..."
+    end if
     do left=k,nsplines !loop genom alla par av knutpunkter för integration
         intstorel=0.d0
         intstorer=0.d0
@@ -71,6 +75,7 @@ program eigensplines
             call getdsplines(kntpts,pts,k,x,dsplinestore(:,1),1)
 
             matstore=matmul(splinestore,transpose(splinestore))
+            !call dgemm('N','T',k,k,1,alpha,splinestore,k,splinestore,1,beta2,dummy,k)
             intstorer=intstorer+xr*weights(i)*matstore
            
             dmatstore=matmul(dsplinestore,transpose(dsplinestore))
@@ -93,7 +98,9 @@ program eigensplines
     !write(*,*) RHS(1,:)
     !call wbmatrix(LHS,nsplines-2,nsplines-2)
     !call wbmatrix(RHS,nsplines-2,nsplines-2)
-    
+    if(iprint) then
+        write(*,*) "Done."
+    end if
     !Zeroing memory for lapack
     ALPHAR=0.d0
     ALPHAI=0.d0
@@ -101,7 +108,7 @@ program eigensplines
     VR=0.d0
     VL=0.d0
 
-    !Determine optimal size of working emmory
+    !Determine optimal size of working memory
     call dggev('N','V',nsplines-2,LHS,nsplines-2,RHS,nsplines-2,ALPHAR,ALPHAI,BETA,VL,nsplines-2,VR,nsplines-2,array1,-1,INFO)
     LWORK=array1(1)
     allocate(WORK(LWORK))
@@ -113,18 +120,34 @@ program eigensplines
     VR=0.d0
     VL=0.d0
     WORK=0.d0
-
+    if(iprint) then
+        write(*,*) "Solving..."
+    end if
     !Compute eigenvalues
     call dggev('N','V',nsplines-2,LHS,nsplines-2,RHS,nsplines-2,ALPHAR,ALPHAI,BETA,VL,nsplines-2,VR,nsplines-2,WORK,LWORK,INFO)
-    !write(*,*) "Lapack response code: ",INFO
+    
+    if(iprint) then
+        write(*,*) "Lapack response code: ",INFO
+    end if
+    !Work out eigenvalues from lapack response
     do i=1,size(ALPHAR)
         eigens(i)=complex(ALPHAR(i)/BETA(i),ALPHAI(i)/BETA(i))
     enddo
+    if(iprint) then
+        write(*,*) "Done."
+    end if
 
+
+    if(iprint) then
+        write(*,*) "Sorting eigenvalues..."
+    end if
     do i=1,size(ipiv)
         ipiv(i)=i
     enddo
     call qsort(1,size(eigens),eigens,ipiv,size(eigens))
+    if(iprint) then
+        write(*,*) "Done."
+    end if
     
     VR=VR(:,ipiv)
     do i=1,nsplines-2
@@ -140,6 +163,9 @@ program eigensplines
         endif
     enddo
     
+    if(iprint) then
+        write(*,*) "Writing wavefunction to file..."
+    end if
     resolution=1000
     open(unit=out_unit,file="wavefunc.txt",action="write",status="replace")
     do i=0,resolution
@@ -148,6 +174,9 @@ program eigensplines
         write(out_unit,*) x,",",resum_splines(kntpts,pts,k,nVR(:,nn),size(nVR(:,nn)),x)**2.d0
     enddo
     close(out_unit)
+    if(iprint) then
+        write(*,*) "Done."
+    end if
     !open(unit=out_unit,file="spl.txt",action="write",status="replace")
     !do i=0,100
     !    x=kntpts(k+1)*real(i,kind=8)/100

@@ -18,30 +18,30 @@ echo "____________________________________________________________"
 ###########################################
 #Compiler to .o files
 echo "compiling to object files..."
-$COMPILER $COMP_FLAGS bin/bspline.f90
-$COMPILER $COMP_FLAGS bin/bsplvb.f
-$COMPILER $COMP_FLAGS bin/bsplvb_cmplx.f
-$COMPILER $COMP_FLAGS bin/dbspline.f90
-$COMPILER $COMP_FLAGS bin/dbsplvb.f90
-$COMPILER $COMP_FLAGS bin/getsplines.f90
-$COMPILER $COMP_FLAGS bin/getdsplines.f90
-$COMPILER $COMP_FLAGS bin/gauleg.f
-$COMPILER $COMP_FLAGS bin/ones.f90
-$COMPILER $COMP_FLAGS bin/zeroes.f90
-$COMPILER $COMP_FLAGS bin/wbmatrix.f90
-$COMPILER $COMP_FLAGS bin/wbmatrixd.f90
-$COMPILER $COMP_FLAGS bin/dbspline.f90
-$COMPILER $COMP_FLAGS bin/glquad.f90
-$COMPILER $COMP_FLAGS bin/integrate.f90
-$COMPILER $COMP_FLAGS bin/legendrep.f90
-$COMPILER $COMP_FLAGS bin/isinf.f90
-$COMPILER $COMP_FLAGS bin/splineends.f90
-$COMPILER $COMP_FLAGS bin/getbsplvbindex.f90
-$COMPILER $COMP_FLAGS bin/getbsplineindex.f90
-$COMPILER $COMP_FLAGS bin/qsort.f90
-$COMPILER $COMP_FLAGS bin/summarizearray.f90
-$COMPILER $COMP_FLAGS bin/get_bsplines.f90
-$COMPILER $COMP_FLAGS bin/get_dbsplines.f90
+$COMPILER $COMP_FLAGS src/bspline.f90
+$COMPILER $COMP_FLAGS src/bsplvb.f
+$COMPILER $COMP_FLAGS src/bsplvb_cmplx.f
+$COMPILER $COMP_FLAGS src/dbspline.f90
+$COMPILER $COMP_FLAGS src/dbsplvb.f90
+$COMPILER $COMP_FLAGS src/getsplines.f90
+$COMPILER $COMP_FLAGS src/getdsplines.f90
+$COMPILER $COMP_FLAGS src/gauleg.f
+$COMPILER $COMP_FLAGS src/ones.f90
+$COMPILER $COMP_FLAGS src/zeroes.f90
+$COMPILER $COMP_FLAGS src/wbmatrix.f90
+$COMPILER $COMP_FLAGS src/wbmatrixd.f90
+$COMPILER $COMP_FLAGS src/dbspline.f90
+$COMPILER $COMP_FLAGS src/glquad.f90
+$COMPILER $COMP_FLAGS src/integrate.f90
+$COMPILER $COMP_FLAGS src/legendrep.f90
+$COMPILER $COMP_FLAGS src/isinf.f90
+$COMPILER $COMP_FLAGS src/splineends.f90
+$COMPILER $COMP_FLAGS src/getbsplvsrcdex.f90
+$COMPILER $COMP_FLAGS src/getbsplineindex.f90
+$COMPILER $COMP_FLAGS src/qsort.f90
+$COMPILER $COMP_FLAGS src/summarizearray.f90
+$COMPILER $COMP_FLAGS src/get_bsplines.f90
+$COMPILER $COMP_FLAGS src/get_dbsplines.f90
 
 echo "done"
 echo "____________________________________________________________"
