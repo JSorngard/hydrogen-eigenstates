@@ -53,7 +53,7 @@ echo "____________________________________________________________"
 #
 echo "compiling main and linking..."
 echo "done"
-$COMPILER eigensplines.f90 -L./ -lforthyd $LIBRARIES -o $PROGRAM_NAME $LINK_FLAGS
+$COMPILER src/eigensplines.f90 -L./ -lforthyd $LIBRARIES -o $PROGRAM_NAME $LINK_FLAGS
 #
 echo "Compilation of" $PROGRAM_NAME "finished"
 echo "Size of program:"
