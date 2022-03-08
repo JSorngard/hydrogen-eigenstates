@@ -63,7 +63,8 @@ program eigensplines
         ipiv(i) = i
     enddo
     call qsort(1, syssize, eigens, ipiv, syssize)
-    !Reorder the array of eigen vectors in the same way
+    
+    !Reorder the array of eigenvectors in the same way
     VR = VR(:,ipiv)
     do i = 1, syssize
         nVR(:,i) = (/0.d0, VR(:,i), 0.d0/)
