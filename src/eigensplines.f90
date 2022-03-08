@@ -38,17 +38,17 @@ program eigensplines
         kntpts(i)=kntpts(i-1)
     enddo
 
-    call build_equation(l,kntpts,pts,k,LHS,RHS,abscissas,weights,nsplines,nqpts,iprint)
-    
     if(iprint) then
-        write(*,*) "Done."
+        write(*,*) "Generating equation..."
     end if
 
-    call solve_eigensystem(LHS,RHS,nsplines,ALPHAR,ALPHAI,BETA,VL,VR,eigens,iprint)
+    call build_equation(l,kntpts,pts,k,LHS,RHS,abscissas,weights,nsplines,nqpts)
 
     if(iprint) then
-        write(*,*) "Done."
+        write(*,*) "Solving..."
     end if
+
+    call solve_eigensystem(LHS,RHS,nsplines,ALPHAR,ALPHAI,BETA,VL,VR,eigens)
 
     if(iprint) then
         write(*,*) "Sorting eigenvalues..."
@@ -57,9 +57,6 @@ program eigensplines
         ipiv(i)=i
     enddo
     call qsort(1,size(eigens),eigens,ipiv,size(eigens))
-    if(iprint) then
-        write(*,*) "Done."
-    end if
     
     VR=VR(:,ipiv)
     do i=1,nsplines-2
@@ -84,15 +81,11 @@ program eigensplines
         write(out_unit,*) x,",",resum_splines(kntpts,pts,k,nVR(:,nn),size(nVR(:,nn)),x)**2.d0
     enddo
     close(out_unit)
-    if(iprint) then
-        write(*,*) "Done."
-    end if
 
 contains
 
-    subroutine solve_eigensystem(LHS,RHS,nsplines,ALPHAR,ALPHAI,BETA,VL,VR,eigens,iprint)
+    subroutine solve_eigensystem(LHS,RHS,nsplines,ALPHAR,ALPHAI,BETA,VL,VR,eigens)
         integer,    intent(in)                                              :: nsplines
-        logical,    intent(in)                                              :: iprint
         real(real64),   intent(in), dimension(nsplines-2, nsplines-2)       :: LHS, RHS
         real(real64),   intent(out),   dimension(nsplines-2)                :: ALPHAR, ALPHAI, BETA
         real(real64),   intent(out),   dimension(nsplines-2, nsplines-2)    :: VL, VR
@@ -121,14 +114,12 @@ contains
         VR=0.d0
         VL=0.d0
         WORK=0.d0
-        if(iprint) then
-            write(*,*) "Solving..."
-        end if
+
         !Compute eigenvalues
         call dggev('N','V',nsplines-2,LHS,nsplines-2,RHS,nsplines-2,ALPHAR,ALPHAI,BETA,VL,nsplines-2,VR,nsplines-2,WORK,LWORK,INFO)
         
-        if(iprint) then
-            write(*,*) "Lapack response code: ",INFO
+        if(INFO/=0) then
+            write(*,*) "WARNING: LAPACK response code: ",INFO," when solving eigensystem"
         end if
 
         !Work out eigenvalues from lapack response
@@ -137,9 +128,8 @@ contains
         enddo
     end subroutine solve_eigensystem
 
-    subroutine build_equation(l,kntpts,pts,k,LHS,RHS,abscissas,weights,nsplines,nqpts,iprint)
+    subroutine build_equation(l,kntpts,pts,k,LHS,RHS,abscissas,weights,nsplines,nqpts)
         integer,  intent(in)                                            :: l, k, pts
-        logical,  intent(in)                                            :: iprint
         integer,  intent(in)                                            :: nsplines, nqpts
         real(real64), intent(in),    dimension(pts)                     :: kntpts
         real(real64), intent(in),    dimension(nqpts)                   :: abscissas, weights
@@ -158,9 +148,7 @@ contains
         RHS=0.d0
         preLHS=0.d0
         preRHS=0.d0
-        if(iprint) then
-            write(*,*) "Generating equation..."
-        end if
+
         do left=k,nsplines !loop through all pairs of knot points for integration
             intstorel=0.d0
             intstorer=0.d0
