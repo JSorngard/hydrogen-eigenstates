@@ -26,19 +26,15 @@ $COMPILER $COMP_FLAGS src/dbsplvb.f90 &
 $COMPILER $COMP_FLAGS src/getsplines.f90 &
 $COMPILER $COMP_FLAGS src/getdsplines.f90 &
 $COMPILER $COMP_FLAGS src/gauleg.f &
-$COMPILER $COMP_FLAGS src/ones.f90 &
-$COMPILER $COMP_FLAGS src/zeroes.f90 &
 $COMPILER $COMP_FLAGS src/wbmatrix.f90 &
 $COMPILER $COMP_FLAGS src/wbmatrixd.f90 &
 $COMPILER $COMP_FLAGS src/dbspline.f90 &
 $COMPILER $COMP_FLAGS src/glquad.f90 &
-$COMPILER $COMP_FLAGS src/integrate.f90 &
 $COMPILER $COMP_FLAGS src/legendrep.f90 &
 $COMPILER $COMP_FLAGS src/isinf.f90 &
 $COMPILER $COMP_FLAGS src/splineends.f90 &
 $COMPILER $COMP_FLAGS src/getbsplineindex.f90 &
 $COMPILER $COMP_FLAGS src/qsort.f90 &
-$COMPILER $COMP_FLAGS src/summarizearray.f90 &
 $COMPILER $COMP_FLAGS src/get_bsplines.f90 &
 $COMPILER $COMP_FLAGS src/get_dbsplines.f90 &
 wait
