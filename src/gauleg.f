@@ -1,3 +1,5 @@
+*     Taken from Numerical Recipes by William H. Press,
+*     Saul A. Teukolsky, William T. Vetterling and Brian P. Flannery
       SUBROUTINE GAULEG(X1,X2,XA,WA,NP)
 
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)

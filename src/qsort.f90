@@ -7,6 +7,7 @@
 !It must however contain the range start:end when the subroutine is called
 !Usage of array2: sorted_matrix=matrix(:,array2)
 !size: the size of the input vectors (array1 and array2)
+!Author: Jimmy Vinbladh
 recursive subroutine qsort(left,right,array,index_vec,len_arr)
 
 implicit none

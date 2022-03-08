@@ -1,3 +1,4 @@
+*     Author: C. De. Boor
       SUBROUTINE bsplvb(t,jhigh,index,x,left,biatx)
 *      INCLUDE 'standa.typ'
 *      INCLUDE 'spldim.def'
