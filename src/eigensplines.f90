@@ -50,7 +50,7 @@ program eigensplines
     if(iprint) then
         write(*,*) "Generating equation..."
     end if
-    do left=k,nsplines !loop genom alla par av knutpunkter för integration
+    do left=k,nsplines !loop through all pairs of knot points for integration
         intstorel=0.d0
         intstorer=0.d0
         matstore=0.d0
@@ -68,7 +68,6 @@ program eigensplines
             call getdsplines(kntpts,pts,k,x,dsplinestore(:,1),1)
 
             matstore=matmul(splinestore,transpose(splinestore))
-            !call dgemm('N','T',k,k,1,alpha,splinestore,k,splinestore,1,beta2,dummy,k)
             intstorer=intstorer+xr*weights(i)*matstore
            
             dmatstore=matmul(dsplinestore,transpose(dsplinestore))
@@ -77,8 +76,6 @@ program eigensplines
             potential=-real(Z,kind=8)/x
             matstore=matstore*(centrifugal+potential)
             intstorel=intstorel+xr*weights(i)*(dmatstore+matstore)
-            !matstore=matstore*potential
-            !intstorel=intstorel+xr*weights(i)*(matstore)
         enddo
         preLHS(left-k+1:left,left-k+1:left)=preLHS(left-k+1:left,left-k+1:left)+intstorel
         preRHS(left-k+1:left,left-k+1:left)=preRHS(left-k+1:left,left-k+1:left)+intstorer
@@ -88,9 +85,6 @@ program eigensplines
     LHS=preLHS(2:nsplines-1,2:nsplines-1)
     RHS=preRHS(2:nsplines-1,2:nsplines-1)
     
-    !write(*,*) RHS(1,:)
-    !call wbmatrix(LHS,nsplines-2,nsplines-2)
-    !call wbmatrix(RHS,nsplines-2,nsplines-2)
     if(iprint) then
         write(*,*) "Done."
     end if
@@ -170,13 +164,6 @@ program eigensplines
     if(iprint) then
         write(*,*) "Done."
     end if
-    !open(unit=out_unit,file="spl.txt",action="write",status="replace")
-    !do i=0,100
-    !    x=kntpts(k+1)*real(i,kind=8)/100
-    !    call bsplvb(kntpts,k,1,x,k,dsplinestore1(:,3))
-    !    write(out_unit,*) x,",",dsplinestore1(1,3)
-    !enddo
-    !close(out_unit)
 end program eigensplines
 
 function resum_splines(kntpts,pts,k,expcoeffs,coeffs,x)
