@@ -121,6 +121,7 @@ contains
         
         if(INFO/=0) then
             write(*,*) "WARNING: LAPACK response code: ",INFO," when solving eigensystem"
+            write(*,*) nsplines-2
         end if
 
         !Work out eigenvalues from lapack response
@@ -128,6 +129,7 @@ contains
             eigens(i)=complex(ALPHAR(i)/BETA(i),ALPHAI(i)/BETA(i))
         enddo
     end subroutine solve_eigensystem
+
 
     subroutine build_equation(l,kntpts,pts,k,LHS,RHS,abscissas,weights,nsplines,nqpts)
         integer,      intent(in)                                        :: l, k, pts
@@ -138,7 +140,7 @@ contains
         
         real(real64), dimension(nqpts) :: dx
         real(real64), dimension(nsplines,nsplines) :: preLHS,preRHS
-        real(real64), dimension(k,1) :: splinestore, dsplinestore
+        real(real64), dimension(k) :: splinestore, dsplinestore
         real(real64), dimension(k,k) :: intstorel, intstorer, matstore, dmatstore
         real(real64) :: xm, xr, a, b, x, centrifugal, potential
         integer :: left
@@ -164,13 +166,13 @@ contains
             dx=xr*abscissas
             do i=1,k+1 !integration loop
                 x=dx(i)+xm
-                call getsplines(kntpts,pts,k,x,splinestore(:,1))
-                call getdsplines(kntpts,pts,k,x,dsplinestore(:,1),1)
+                call getsplines(kntpts,pts,k,x,splinestore)
+                call getdsplines(kntpts,pts,k,x,dsplinestore,1)
 
-                matstore=matmul(splinestore,transpose(splinestore))
+                call outer_product(splinestore,splinestore,matstore,k,k)
                 intstorer=intstorer+xr*weights(i)*matstore
                
-                dmatstore=matmul(dsplinestore,transpose(dsplinestore))
+                call outer_product(dsplinestore,dsplinestore,dmatstore,k,k)
                 dmatstore=dmatstore*.5d0
                 centrifugal=.5d0*real(l,kind=8)*(real(l,kind=8)+1.d0)/(x**2.d0)
                 potential=-real(Z,kind=8)/x
@@ -185,6 +187,17 @@ contains
         LHS=preLHS(2:nsplines-1,2:nsplines-1)
         RHS=preRHS(2:nsplines-1,2:nsplines-1)
     end subroutine build_equation
+
+
+    subroutine outer_product(vec1,vec2,result,n,m)
+        integer,      intent(in)                    :: n, m
+        real(real64), intent(in),  dimension(m)     :: vec1
+        real(real64), intent(in),  dimension(n)     :: vec2
+        real(real64), intent(out), dimension(m,n)   :: result
+        result = 0.d0
+        call dger(m,n,1.d0,vec1,1,vec2,1,result,m)
+    end subroutine outer_product
+
 
     function resum_splines(kntpts,pts,k,expcoeffs,coeffs,x)
         integer,intent(in) :: pts,coeffs,k
