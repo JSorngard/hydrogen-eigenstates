@@ -8,8 +8,8 @@ program eigensplines
     integer,  parameter :: Z=1
     
     !Variables, can be changed to change the system
-    integer,  parameter :: l=0, nn=1
-    integer,  parameter :: k=7, pts=50, out_unit=20
+    integer,  parameter :: nn=1, l=0 !These variables determine the principal and azimuthal quantum numbers for the wavefunction that gets printed out
+    integer,  parameter :: k=7, pts=50
     integer,  parameter :: neqs=pts-2*(k-1), nsplines=pts-k, n=3, nqpts=k+1, syssize=nsplines-2
     real(real64), parameter :: lstkntpt=50., lstkntptSI=10*rb
     logical,  parameter :: iprint=.false.
@@ -28,6 +28,7 @@ program eigensplines
     logical, external :: isinf
     integer, external :: splinestart, splineend
     real(real64) :: x
+    integer :: out_unit
 
     !Generate the abscissas and weights for future use of Gaussian quadrature
     call gauleg(-1.d0, 1.d0, abscissas, weights, nqpts)
@@ -81,7 +82,7 @@ program eigensplines
         write(*,*) "Writing wavefunction to file..."
     end if
     resolution = 1000
-    open(unit=out_unit, file="wavefunc.txt", action="write", status="replace")
+    open(newunit=out_unit, file="wavefunc.txt", action="write", status="replace")
     do i = 0, resolution
         x = lstkntpt*dble(i)/resolution
         
