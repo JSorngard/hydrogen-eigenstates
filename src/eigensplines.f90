@@ -5,14 +5,18 @@ program eigensplines
     !Physical constants
     real(real64), parameter :: rb=5.29177211E-11, hplanck=6.62607E-34, me=9.109383E-31
     real(real64), parameter :: pi=4*atan(1.d0), hbar=hplanck/(2*pi), epsilonnaught=8.854E-12, Q=1.6E-19
-    integer,  parameter :: Z=1
+    integer, parameter :: Z=1
     
     !Variables, can be changed to change the system
-    integer,  parameter :: nn=1, l=0 !These variables determine the principal and azimuthal quantum numbers for the wavefunction that gets printed out
-    integer,  parameter :: k=7, pts=50
-    integer,  parameter :: neqs=pts-2*(k-1), nsplines=pts-k, n=3, nqpts=k+1, syssize=nsplines-2
+    integer, parameter :: n=1, l=0 !These variables determine the principal and azimuthal quantum numbers for the wavefunction that gets printed out
+    integer, parameter :: k=7, pts=50
     real(real64), parameter :: lstkntpt=50., lstkntptSI=10*rb
-    logical,  parameter :: iprint=.false.
+
+    !Other variables, that depend on the previous ones
+    integer, parameter :: neqs=pts-2*(k-1), nsplines=pts-k, nqpts=k+1, syssize=nsplines-2
+
+    !Set to true for more output, can be useful for debugging
+    logical, parameter :: iprint=.false.
 
     !Intermediate variables used for computation
     integer :: i, resolution
@@ -86,7 +90,7 @@ program eigensplines
     do i = 0, resolution
         x = lstkntpt*dble(i)/resolution
         
-        write(out_unit,*) x,",",resum_splines(kntpts,pts,k,nVR(:,nn),size(nVR(:,nn)),x)**2.d0
+        write(out_unit,*) x,",",resum_splines(kntpts,pts,k,nVR(:,n),size(nVR(:,n)),x)**2.d0
     enddo
     close(out_unit)
 
