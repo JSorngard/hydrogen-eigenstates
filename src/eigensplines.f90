@@ -1,30 +1,28 @@
 program eigensplines
+    use iso_fortran_env
     implicit none
 
     !Variables
-    integer,  parameter :: DP=kind(1.d0)
     integer,  parameter :: l=0,nn=1
     integer,  parameter :: k=7,pts=50,neqs=pts-2*(k-1),nsplines=pts-k,n=3,nqpts=k+1,out_unit=20
-    real(DP), parameter :: rb=5.29177211E-11,lstkntptSI=10*rb,lstkntpt=50.,hplanck=6.62607E-34,me=9.109383E-31
-    real(DP), parameter :: pi=3.14159265359,hbar=hplanck/(2*pi),epsilonnaught=8.854E-12,Q=1.6E-19
+    real(real64), parameter :: rb=5.29177211E-11,lstkntptSI=10*rb,lstkntpt=50.,hplanck=6.62607E-34,me=9.109383E-31
+    real(real64), parameter :: pi=3.14159265359,hbar=hplanck/(2*pi),epsilonnaught=8.854E-12,Q=1.6E-19
     integer,  parameter :: Z=1
     logical,  parameter :: iprint=.false.
 
-    integer :: i,left,INFO,LWORK,resolution
-    real(DP), dimension(nqpts) :: abscissas,weights
-    real(DP), external :: bspline,dbspline,glquad
-    real(DP), dimension(pts) :: kntpts
-    real(DP), dimension(nsplines-2,nsplines-2) :: VL,VR
-    real(DP), dimension(nsplines-2,nsplines-2) :: LHS, RHS
-    real(DP), dimension(nsplines,nsplines-2) :: nVR
-    real(DP), dimension(nsplines-2) :: ALPHAR,ALPHAI,BETA
+    integer :: i,left,resolution
+    real(real64), dimension(nqpts) :: abscissas,weights
+    real(real64), external :: bspline,dbspline,glquad
+    real(real64), dimension(pts) :: kntpts
+    real(real64), dimension(nsplines-2,nsplines-2) :: LHS, RHS
+    real(real64), dimension(nsplines,nsplines-2) :: nVR
+    real(real64), dimension(nsplines-2) :: ALPHAR, ALPHAI, BETA
+    real(real64), dimension(nsplines-2, nsplines-2) :: VL, VR
     complex*16, dimension(nsplines-2) :: eigens
     integer, dimension(nsplines-2) :: ipiv
-    real(DP), dimension(:), allocatable :: WORK
     logical, external :: isinf
     integer, external :: splinestart,splineend
-    real(DP), dimension(3) :: array1
-    real(DP) :: x
+    real(real64) :: x
 
     !Generate the abscissas and weights for future use of Gaussian quadrature
     call gauleg(-1.d0,1.d0,abscissas,weights,nqpts)
@@ -45,42 +43,12 @@ program eigensplines
     if(iprint) then
         write(*,*) "Done."
     end if
-    !Zeroing memory for lapack
-    ALPHAR=0.d0
-    ALPHAI=0.d0
-    BETA=0.d0
-    VR=0.d0
-    VL=0.d0
 
-    !Determine optimal size of working memory
-    call dggev('N','V',nsplines-2,LHS,nsplines-2,RHS,nsplines-2,ALPHAR,ALPHAI,BETA,VL,nsplines-2,VR,nsplines-2,array1,-1,INFO)
-    LWORK=array1(1)
-    allocate(WORK(LWORK))
+    call solve_eigensystem(LHS,RHS,nsplines,ALPHAR,ALPHAI,BETA,VL,VR,eigens,iprint)
 
-    !Zeroing memory for lapack
-    ALPHAR=0.d0
-    ALPHAI=0.d0
-    BETA=0.d0
-    VR=0.d0
-    VL=0.d0
-    WORK=0.d0
-    if(iprint) then
-        write(*,*) "Solving..."
-    end if
-    !Compute eigenvalues
-    call dggev('N','V',nsplines-2,LHS,nsplines-2,RHS,nsplines-2,ALPHAR,ALPHAI,BETA,VL,nsplines-2,VR,nsplines-2,WORK,LWORK,INFO)
-    
-    if(iprint) then
-        write(*,*) "Lapack response code: ",INFO
-    end if
-    !Work out eigenvalues from lapack response
-    do i=1,size(ALPHAR)
-        eigens(i)=complex(ALPHAR(i)/BETA(i),ALPHAI(i)/BETA(i))
-    enddo
     if(iprint) then
         write(*,*) "Done."
     end if
-
 
     if(iprint) then
         write(*,*) "Sorting eigenvalues..."
@@ -122,20 +90,66 @@ program eigensplines
 
 contains
 
+    subroutine solve_eigensystem(LHS,RHS,nsplines,ALPHAR,ALPHAI,BETA,VL,VR,eigens,iprint)
+        integer,    intent(in)                                          :: nsplines
+        logical,    intent(in)                                          :: iprint
+        real(real64),   intent(inout), dimension(nsplines-2, nsplines-2)    :: LHS, RHS
+        real(real64),   intent(out),   dimension(nsplines-2)                :: ALPHAR, ALPHAI, BETA
+        real(real64),   intent(out),   dimension(nsplines-2, nsplines-2)    :: VL, VR
+        complex*16, intent(out),   dimension(nsplines-2)                :: eigens
+
+        real(real64), dimension(3) :: array1
+        integer :: INFO, LWORK
+        real(real64), dimension(:), allocatable :: WORK
+
+        !Zeroing memory for lapack
+        ALPHAR=0.d0
+        ALPHAI=0.d0
+        BETA=0.d0
+        VR=0.d0
+        VL=0.d0
+
+        !Determine optimal size of working memory
+        call dggev('N','V',nsplines-2,LHS,nsplines-2,RHS,nsplines-2,ALPHAR,ALPHAI,BETA,VL,nsplines-2,VR,nsplines-2,array1,-1,INFO)
+        LWORK=array1(1)
+        allocate(WORK(LWORK))
+
+        !Zeroing memory for lapack
+        ALPHAR=0.d0
+        ALPHAI=0.d0
+        BETA=0.d0
+        VR=0.d0
+        VL=0.d0
+        WORK=0.d0
+        if(iprint) then
+            write(*,*) "Solving..."
+        end if
+        !Compute eigenvalues
+        call dggev('N','V',nsplines-2,LHS,nsplines-2,RHS,nsplines-2,ALPHAR,ALPHAI,BETA,VL,nsplines-2,VR,nsplines-2,WORK,LWORK,INFO)
+        
+        if(iprint) then
+            write(*,*) "Lapack response code: ",INFO
+        end if
+
+        !Work out eigenvalues from lapack response
+        do i=1,size(ALPHAR)
+            eigens(i)=complex(ALPHAR(i)/BETA(i),ALPHAI(i)/BETA(i))
+        enddo
+    end subroutine solve_eigensystem
+
     subroutine build_equation(l,kntpts,pts,k,LHS,RHS,abscissas,weights,nsplines,nqpts,iprint)
-        integer,  parameter :: DP=kind(1.d0)
         integer,  intent(in)                                        :: l, k, pts
         logical,  intent(in)                                        :: iprint
         integer,  intent(in)                                        :: nsplines, nqpts
-        real(DP), intent(in),    dimension(pts)                     :: kntpts
-        real(DP), intent(in),    dimension(nqpts)                   :: abscissas, weights
-        real(DP), intent(inout), dimension(nsplines-2,nsplines-2)   :: LHS, RHS
+        real(real64), intent(in),    dimension(pts)                     :: kntpts
+        real(real64), intent(in),    dimension(nqpts)                   :: abscissas, weights
+        real(real64), intent(inout), dimension(nsplines-2,nsplines-2)   :: LHS, RHS
         
-        real(DP), dimension(nqpts) :: dx
-        real(DP), dimension(nsplines,nsplines) :: preLHS,preRHS
-        real(DP), dimension(k,1) :: splinestore, dsplinestore
-        real(DP), dimension(k,k) :: intstorel, intstorer, matstore, dmatstore
-        real(DP) :: xm, xr, a, b, x, centrifugal, potential
+        real(real64), dimension(nqpts) :: dx
+        real(real64), dimension(nsplines,nsplines) :: preLHS,preRHS
+        real(real64), dimension(k,1) :: splinestore, dsplinestore
+        real(real64), dimension(k,k) :: intstorel, intstorer, matstore, dmatstore
+        real(real64) :: xm, xr, a, b, x, centrifugal, potential
         integer :: left
 
 
