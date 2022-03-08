@@ -11,62 +11,62 @@ program eigensplines
     integer,  parameter :: Z=1
     logical,  parameter :: iprint=.false.
 
-    integer :: i,resolution
-    real(real64), dimension(nqpts) :: abscissas,weights
-    real(real64), external :: bspline,dbspline,glquad
+    integer :: i, resolution
+    real(real64), dimension(nqpts) :: abscissas, weights
+    real(real64), external :: bspline, dbspline, glquad
     real(real64), dimension(pts) :: kntpts
-    real(real64), dimension(nsplines-2,nsplines-2) :: LHS, RHS
-    real(real64), dimension(nsplines,nsplines-2) :: nVR
+    real(real64), dimension(nsplines-2, nsplines-2) :: LHS, RHS
+    real(real64), dimension(nsplines, nsplines-2) :: nVR
     real(real64), dimension(nsplines-2) :: ALPHAR, ALPHAI, BETA
     real(real64), dimension(nsplines-2, nsplines-2) :: VL, VR
     complex(real64), dimension(nsplines-2) :: eigens
     integer, dimension(nsplines-2) :: ipiv
     logical, external :: isinf
-    integer, external :: splinestart,splineend
+    integer, external :: splinestart, splineend
     real(real64) :: x
 
     !Generate the abscissas and weights for future use of Gaussian quadrature
-    call gauleg(-1.d0,1.d0,abscissas,weights,nqpts)
+    call gauleg(-1.d0, 1.d0, abscissas, weights, nqpts)
 
     !Generate a knot sequence with equal spacing from 0 to lstkntpt.
-    do i=1,k
-        kntpts(i)=0.d0
+    do i = 1, k
+        kntpts(i) = 0.d0
     enddo
-    do i=k+1,pts-k+1
-        kntpts(i)=kntpts(i-1)+lstkntpt/(neqs-1)
+    do i = k+1, pts-k+1
+        kntpts(i) = kntpts(i-1) + lstkntpt/(neqs-1)
     enddo
-    do i=pts-k+2,pts
-        kntpts(i)=kntpts(i-1)
+    do i = pts-k+2, pts
+        kntpts(i) = kntpts(i-1)
     enddo
 
     if(iprint) then
         write(*,*) "Generating equation..."
     end if
 
-    call build_equation(l,kntpts,pts,k,LHS,RHS,abscissas,weights,nsplines,nqpts)
+    call build_equation(l, kntpts, pts, k, LHS, RHS, abscissas, weights, nsplines, nqpts)
 
     if(iprint) then
         write(*,*) "Solving..."
     end if
 
-    call solve_eigensystem(LHS,RHS,nsplines,ALPHAR,ALPHAI,BETA,VL,VR,eigens)
+    call solve_eigensystem(LHS, RHS, nsplines, ALPHAR, ALPHAI, BETA, VL, VR, eigens)
 
     if(iprint) then
         write(*,*) "Sorting eigenvalues..."
     end if
-    do i=1,size(ipiv)
-        ipiv(i)=i
+    do i = 1, size(ipiv)
+        ipiv(i) = i
     enddo
-    call qsort(1,size(eigens),eigens,ipiv,size(eigens))
+    call qsort(1, size(eigens), eigens, ipiv, size(eigens))
     
-    VR=VR(:,ipiv)
-    do i=1,nsplines-2
-        nVR(:,i)=(/0.d0,VR(:,i),0.d0/)
+    VR = VR(:,ipiv)
+    do i = 1, nsplines-2
+        nVR(:,i) = (/0.d0, VR(:,i), 0.d0/)
     enddo
 
     write(*,*) "The negative eigenvalues are:"
-    do i=1,size(eigens)
-        if (dble(eigens(i))<0) then
+    do i = 1, size(eigens)
+        if (dble(eigens(i)) < 0) then
             write(*,*) dble(eigens(i))
         endif
     enddo
@@ -74,10 +74,10 @@ program eigensplines
     if(iprint) then
         write(*,*) "Writing wavefunction to file..."
     end if
-    resolution=1000
-    open(unit=out_unit,file="wavefunc.txt",action="write",status="replace")
-    do i=0,resolution
-        x=lstkntpt*dble(i)/resolution
+    resolution = 1000
+    open(unit=out_unit, file="wavefunc.txt", action="write", status="replace")
+    do i = 0, resolution
+        x = lstkntpt*dble(i)/resolution
         
         write(out_unit,*) x,",",resum_splines(kntpts,pts,k,nVR(:,nn),size(nVR(:,nn)),x)**2.d0
     enddo
@@ -97,11 +97,11 @@ contains
         real(real64), dimension(:), allocatable :: WORK
 
         !Zeroing memory for lapack
-        ALPHAR=0.d0
-        ALPHAI=0.d0
-        BETA=0.d0
-        VR=0.d0
-        VL=0.d0
+        ALPHAR = 0.d0
+        ALPHAI = 0.d0
+        BETA   = 0.d0
+        VR     = 0.d0
+        VL     = 0.d0
 
         !Determine optimal size of working memory
         call dggev('N','V',nsplines-2,LHS,nsplines-2,RHS,nsplines-2,ALPHAR,ALPHAI,BETA,VL,nsplines-2,VR,nsplines-2,array1,-1,INFO)
@@ -109,19 +109,18 @@ contains
         allocate(WORK(LWORK))
 
         !Zeroing memory for lapack
-        ALPHAR=0.d0
-        ALPHAI=0.d0
-        BETA=0.d0
-        VR=0.d0
-        VL=0.d0
-        WORK=0.d0
+        ALPHAR = 0.d0
+        ALPHAI = 0.d0
+        BETA   = 0.d0
+        VR     = 0.d0
+        VL     = 0.d0
+        WORK   = 0.d0
 
         !Compute eigenvalues
         call dggev('N','V',nsplines-2,LHS,nsplines-2,RHS,nsplines-2,ALPHAR,ALPHAI,BETA,VL,nsplines-2,VR,nsplines-2,WORK,LWORK,INFO)
         
         if(INFO/=0) then
-            write(*,*) "WARNING: LAPACK response code: ",INFO," when solving eigensystem"
-            write(*,*) nsplines-2
+            write(*,*) "WARNING: LAPACK response code: ",INFO," when solving eigensystem. System size: ",nsplines-2
         end if
 
         !Work out eigenvalues from lapack response
@@ -145,25 +144,26 @@ contains
         real(real64) :: xm, xr, a, b, x, centrifugal, potential
         integer :: left
 
-
-        !Zeroing memory
-        LHS=0.d0
-        RHS=0.d0
-        preLHS=0.d0
-        preRHS=0.d0
+        LHS    = 0.d0
+        RHS    = 0.d0
+        preLHS = 0.d0
+        preRHS = 0.d0
 
         do left=k,nsplines !loop through all pairs of knot points for integration
-            intstorel=0.d0
-            intstorer=0.d0
-            matstore=0.d0
-            dmatstore=0.d0
-            splinestore=0.d0
-            dsplinestore=0.d0
-            a=kntpts(left)
-            b=kntpts(left+1)
-            xm=0.5d0*(b+a)
-            xr=0.5d0*(b-a)
-            dx=xr*abscissas
+            intstorel    = 0.d0
+            intstorer    = 0.d0
+            matstore     = 0.d0
+            dmatstore    = 0.d0
+            splinestore  = 0.d0
+            dsplinestore = 0.d0
+
+            a = kntpts(left)
+            b = kntpts(left+1)
+            
+            xm = 0.5d0*(b+a)
+            xr = 0.5d0*(b-a)
+            dx = xr*abscissas
+
             do i=1,k+1 !integration loop
                 x=dx(i)+xm
                 call getsplines(kntpts,pts,k,x,splinestore)
