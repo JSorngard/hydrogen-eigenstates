@@ -93,8 +93,10 @@ contains
         complex(real64), intent(out), dimension(nsplines-2)             :: eigens
 
         real(real64), dimension(3) :: array1
-        integer :: INFO, LWORK
+        integer :: INFO, LWORK, syssize
         real(real64), dimension(:), allocatable :: WORK
+
+        syssize = nsplines-2
 
         !Zeroing memory for lapack
         ALPHAR = 0.d0
@@ -104,7 +106,7 @@ contains
         VL     = 0.d0
 
         !Determine optimal size of working memory
-        call dggev('N','V',nsplines-2,LHS,nsplines-2,RHS,nsplines-2,ALPHAR,ALPHAI,BETA,VL,nsplines-2,VR,nsplines-2,array1,-1,INFO)
+        call dggev('N','V',syssize,LHS,syssize,RHS,syssize,ALPHAR,ALPHAI,BETA,VL,syssize,VR,syssize,array1,-1,INFO)
         LWORK=array1(1)
         allocate(WORK(LWORK))
 
@@ -117,15 +119,15 @@ contains
         WORK   = 0.d0
 
         !Compute eigenvalues
-        call dggev('N','V',nsplines-2,LHS,nsplines-2,RHS,nsplines-2,ALPHAR,ALPHAI,BETA,VL,nsplines-2,VR,nsplines-2,WORK,LWORK,INFO)
+        call dggev('N','V',syssize,LHS,syssize,RHS,syssize,ALPHAR,ALPHAI,BETA,VL,syssize,VR,syssize,WORK,LWORK,INFO)
         
-        if(INFO/=0) then
-            write(*,*) "WARNING: LAPACK response code: ",INFO," when solving eigensystem. System size: ",nsplines-2
+        if(INFO /= 0) then
+            write(*,*) "WARNING: LAPACK response code: ",INFO," when solving eigensystem. System size: ",syssize
         end if
 
         !Work out eigenvalues from lapack response
-        do i=1,size(ALPHAR)
-            eigens(i)=complex(ALPHAR(i)/BETA(i),ALPHAI(i)/BETA(i))
+        do i = 1, size(ALPHAR)
+            eigens(i) = complex(ALPHAR(i)/BETA(i),ALPHAI(i)/BETA(i))
         enddo
     end subroutine solve_eigensystem
 
