@@ -91,12 +91,12 @@ program eigensplines
 contains
 
     subroutine solve_eigensystem(LHS,RHS,nsplines,ALPHAR,ALPHAI,BETA,VL,VR,eigens,iprint)
-        integer,    intent(in)                                          :: nsplines
-        logical,    intent(in)                                          :: iprint
-        real(real64),   intent(inout), dimension(nsplines-2, nsplines-2)    :: LHS, RHS
+        integer,    intent(in)                                              :: nsplines
+        logical,    intent(in)                                              :: iprint
+        real(real64),   intent(in), dimension(nsplines-2, nsplines-2)       :: LHS, RHS
         real(real64),   intent(out),   dimension(nsplines-2)                :: ALPHAR, ALPHAI, BETA
         real(real64),   intent(out),   dimension(nsplines-2, nsplines-2)    :: VL, VR
-        complex*16, intent(out),   dimension(nsplines-2)                :: eigens
+        complex*16, intent(out),   dimension(nsplines-2)                    :: eigens
 
         real(real64), dimension(3) :: array1
         integer :: INFO, LWORK
@@ -138,9 +138,9 @@ contains
     end subroutine solve_eigensystem
 
     subroutine build_equation(l,kntpts,pts,k,LHS,RHS,abscissas,weights,nsplines,nqpts,iprint)
-        integer,  intent(in)                                        :: l, k, pts
-        logical,  intent(in)                                        :: iprint
-        integer,  intent(in)                                        :: nsplines, nqpts
+        integer,  intent(in)                                            :: l, k, pts
+        logical,  intent(in)                                            :: iprint
+        integer,  intent(in)                                            :: nsplines, nqpts
         real(real64), intent(in),    dimension(pts)                     :: kntpts
         real(real64), intent(in),    dimension(nqpts)                   :: abscissas, weights
         real(real64), intent(inout), dimension(nsplines-2,nsplines-2)   :: LHS, RHS
