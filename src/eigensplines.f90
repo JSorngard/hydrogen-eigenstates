@@ -3,14 +3,15 @@ program eigensplines
     implicit none
 
     !Variables
-    integer,  parameter :: l=0,nn=1
-    integer,  parameter :: k=7,pts=50,neqs=pts-2*(k-1),nsplines=pts-k,n=3,nqpts=k+1,out_unit=20
-    real(real64), parameter :: rb=5.29177211E-11,lstkntptSI=10*rb,lstkntpt=50.,hplanck=6.62607E-34,me=9.109383E-31
-    real(real64), parameter :: pi=3.14159265359,hbar=hplanck/(2*pi),epsilonnaught=8.854E-12,Q=1.6E-19
+    integer,  parameter :: l=0, nn=1
+    integer,  parameter :: k=7, pts=50, out_unit=20
+    integer,  parameter :: neqs=pts-2*(k-1), nsplines=pts-k, n=3, nqpts=k+1
+    real(real64), parameter :: rb=5.29177211E-11, lstkntptSI=10*rb, lstkntpt=50., hplanck=6.62607E-34, me=9.109383E-31
+    real(real64), parameter :: pi=3.14159265359, hbar=hplanck/(2*pi), epsilonnaught=8.854E-12, Q=1.6E-19
     integer,  parameter :: Z=1
     logical,  parameter :: iprint=.false.
 
-    integer :: i,left,resolution
+    integer :: i,resolution
     real(real64), dimension(nqpts) :: abscissas,weights
     real(real64), external :: bspline,dbspline,glquad
     real(real64), dimension(pts) :: kntpts
@@ -85,11 +86,11 @@ program eigensplines
 contains
 
     subroutine solve_eigensystem(LHS,RHS,nsplines,ALPHAR,ALPHAI,BETA,VL,VR,eigens)
-        integer,    intent(in)                                              :: nsplines
-        real(real64),   intent(in), dimension(nsplines-2, nsplines-2)       :: LHS, RHS
-        real(real64),   intent(out),   dimension(nsplines-2)                :: ALPHAR, ALPHAI, BETA
-        real(real64),   intent(out),   dimension(nsplines-2, nsplines-2)    :: VL, VR
-        complex*16, intent(out),   dimension(nsplines-2)                    :: eigens
+        integer,         intent(in)                                     :: nsplines
+        real(real64),    intent(in),  dimension(nsplines-2, nsplines-2) :: LHS, RHS
+        real(real64),    intent(out), dimension(nsplines-2)             :: ALPHAR, ALPHAI, BETA
+        real(real64),    intent(out), dimension(nsplines-2, nsplines-2) :: VL, VR
+        complex(real64), intent(out), dimension(nsplines-2)             :: eigens
 
         real(real64), dimension(3) :: array1
         integer :: INFO, LWORK
@@ -129,8 +130,8 @@ contains
     end subroutine solve_eigensystem
 
     subroutine build_equation(l,kntpts,pts,k,LHS,RHS,abscissas,weights,nsplines,nqpts)
-        integer,  intent(in)                                            :: l, k, pts
-        integer,  intent(in)                                            :: nsplines, nqpts
+        integer,      intent(in)                                        :: l, k, pts
+        integer,      intent(in)                                        :: nsplines, nqpts
         real(real64), intent(in),    dimension(pts)                     :: kntpts
         real(real64), intent(in),    dimension(nqpts)                   :: abscissas, weights
         real(real64), intent(inout), dimension(nsplines-2,nsplines-2)   :: LHS, RHS
