@@ -19,7 +19,7 @@ program eigensplines
     real(real64), dimension(nsplines,nsplines-2) :: nVR
     real(real64), dimension(nsplines-2) :: ALPHAR, ALPHAI, BETA
     real(real64), dimension(nsplines-2, nsplines-2) :: VL, VR
-    complex*16, dimension(nsplines-2) :: eigens
+    complex(real64), dimension(nsplines-2) :: eigens
     integer, dimension(nsplines-2) :: ipiv
     logical, external :: isinf
     integer, external :: splinestart,splineend
