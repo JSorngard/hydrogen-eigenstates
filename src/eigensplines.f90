@@ -66,8 +66,8 @@ program eigensplines
 
     write(*,*) "The negative eigenvalues are:"
     do i=1,size(eigens)
-        if (real(eigens(i),kind=8)<0) then
-            write(*,*) real(eigens(i),kind=8)
+        if (dble(eigens(i))<0) then
+            write(*,*) dble(eigens(i))
         endif
     enddo
     
@@ -77,7 +77,7 @@ program eigensplines
     resolution=1000
     open(unit=out_unit,file="wavefunc.txt",action="write",status="replace")
     do i=0,resolution
-        x=lstkntpt*real(i,kind=8)/resolution
+        x=lstkntpt*dble(i)/resolution
         
         write(out_unit,*) x,",",resum_splines(kntpts,pts,k,nVR(:,nn),size(nVR(:,nn)),x)**2.d0
     enddo
@@ -174,8 +174,8 @@ contains
                
                 call outer_product(dsplinestore,dsplinestore,dmatstore,k,k)
                 dmatstore=dmatstore*.5d0
-                centrifugal=.5d0*real(l,kind=8)*(real(l,kind=8)+1.d0)/(x**2.d0)
-                potential=-real(Z,kind=8)/x
+                centrifugal=.5d0*dble(l)*(dble(l)+1.d0)/(x**2.d0)
+                potential=-dble(Z)/x
                 matstore=matstore*(centrifugal+potential)
                 intstorel=intstorel+xr*weights(i)*(dmatstore+matstore)
             enddo
