@@ -187,13 +187,12 @@ contains
     end subroutine build_equation
 
     function resum_splines(kntpts,pts,k,expcoeffs,coeffs,x)
-        integer,  parameter :: DP=kind(1.d0)
         integer,intent(in) :: pts,coeffs,k
-        real(DP),intent(in) :: x
-        real(DP),dimension(pts),intent(in) :: kntpts
-        real(DP),dimension(coeffs),intent(in) :: expcoeffs
-        real(DP),dimension(k) :: splines
-        real(DP) :: resum_splines
+        real(real64),intent(in) :: x
+        real(real64),dimension(pts),intent(in) :: kntpts
+        real(real64),dimension(coeffs),intent(in) :: expcoeffs
+        real(real64),dimension(k) :: splines
+        real(real64) :: resum_splines
         integer :: i,left
 
         !Determine which knotpoint is the one directly to the left of x
