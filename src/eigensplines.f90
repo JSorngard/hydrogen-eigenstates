@@ -2,29 +2,29 @@ program eigensplines
     implicit none
 
     !Variables
-    integer,parameter::l=0,nn=1
-    integer,parameter::k=7,pts=50,neqs=pts-2*(k-1),nsplines=pts-k,n=3,nqpts=k+1,out_unit=20
-    real*8,parameter::rb=5.29177211E-11,lstkntptSI=10*rb,lstkntpt=50.,hplanck=6.62607E-34,me=9.109383E-31
-    real*8,parameter::pi=3.14159265359,hbar=hplanck/(2*pi),epsilonnaught=8.854E-12,Q=1.6E-19
-    integer,parameter::Z=1
-    logical,parameter::iprint=.false.
-    integer::i,left,INFO,LWORK,resolution
-    real*8,dimension(nqpts)::abscissas,weights,dx
-    real*8::xm,xr,a,b,x,centrifugal,potential
-    real*8,external::bspline,dbspline,glquad,resum_splines
-    real*8,dimension(pts)::kntpts
-    real*8,dimension(nsplines,nsplines)::preLHS,preRHS
-    real*8,dimension(nsplines-2,nsplines-2):: LHS,RHS,VL,VR
-    real*8,dimension(nsplines,nsplines-2):: nVR
-    real*8,dimension(nsplines-2)::ALPHAR,ALPHAI,BETA
-    complex*16,dimension(nsplines-2)::eigens
-    integer,dimension(nsplines-2)::ipiv
-    real*8,dimension(:),allocatable::WORK
-    real*8,dimension(k,1)::splinestore,dsplinestore
-    real*8,dimension(k,k)::intstorel,intstorer,matstore,dmatstore,dummy
-    logical,external::isinf
-    integer,external::splinestart,splineend
-    real*8,dimension(3)::array1
+    integer,  parameter :: DP=kind(1.d0)
+    integer,  parameter :: l=0,nn=1
+    integer,  parameter :: k=7,pts=50,neqs=pts-2*(k-1),nsplines=pts-k,n=3,nqpts=k+1,out_unit=20
+    real(DP), parameter :: rb=5.29177211E-11,lstkntptSI=10*rb,lstkntpt=50.,hplanck=6.62607E-34,me=9.109383E-31
+    real(DP), parameter :: pi=3.14159265359,hbar=hplanck/(2*pi),epsilonnaught=8.854E-12,Q=1.6E-19
+    integer,  parameter :: Z=1
+    logical,  parameter :: iprint=.false.
+
+    integer :: i,left,INFO,LWORK,resolution
+    real(DP), dimension(nqpts) :: abscissas,weights
+    real(DP), external :: bspline,dbspline,glquad
+    real(DP), dimension(pts) :: kntpts
+    real(DP), dimension(nsplines-2,nsplines-2) :: VL,VR
+    real(DP), dimension(nsplines-2,nsplines-2) :: LHS, RHS
+    real(DP), dimension(nsplines,nsplines-2) :: nVR
+    real(DP), dimension(nsplines-2) :: ALPHAR,ALPHAI,BETA
+    complex*16, dimension(nsplines-2) :: eigens
+    integer, dimension(nsplines-2) :: ipiv
+    real(DP), dimension(:), allocatable :: WORK
+    logical, external :: isinf
+    integer, external :: splinestart,splineend
+    real(DP), dimension(3) :: array1
+    real(DP) :: x
 
     !Generate the abscissas and weights for future use of Gaussian quadrature
     call gauleg(-1.d0,1.d0,abscissas,weights,nqpts)
@@ -39,51 +39,8 @@ program eigensplines
     do i=pts-k+2,pts
         kntpts(i)=kntpts(i-1)
     enddo
-    !write(*,"(f11.3)") kntpts
 
-    !Zeroing memory
-    LHS=0.d0
-    RHS=0.d0
-    preLHS=0.d0
-    preRHS=0.d0
-    dummy=0.d0
-    if(iprint) then
-        write(*,*) "Generating equation..."
-    end if
-    do left=k,nsplines !loop through all pairs of knot points for integration
-        intstorel=0.d0
-        intstorer=0.d0
-        matstore=0.d0
-        dmatstore=0.d0
-        splinestore=0.d0
-        dsplinestore=0.d0
-        a=kntpts(left)
-        b=kntpts(left+1)
-        xm=0.5d0*(b+a)
-        xr=0.5d0*(b-a)
-        dx=xr*abscissas
-        do i=1,nqpts !integration loop
-            x=dx(i)+xm
-            call getsplines(kntpts,pts,k,x,splinestore(:,1))
-            call getdsplines(kntpts,pts,k,x,dsplinestore(:,1),1)
-
-            matstore=matmul(splinestore,transpose(splinestore))
-            intstorer=intstorer+xr*weights(i)*matstore
-           
-            dmatstore=matmul(dsplinestore,transpose(dsplinestore))
-            dmatstore=dmatstore*.5d0
-            centrifugal=.5d0*real(l,kind=8)*(real(l,kind=8)+1.d0)/(x**2.d0)
-            potential=-real(Z,kind=8)/x
-            matstore=matstore*(centrifugal+potential)
-            intstorel=intstorel+xr*weights(i)*(dmatstore+matstore)
-        enddo
-        preLHS(left-k+1:left,left-k+1:left)=preLHS(left-k+1:left,left-k+1:left)+intstorel
-        preRHS(left-k+1:left,left-k+1:left)=preRHS(left-k+1:left,left-k+1:left)+intstorer
-    enddo
-
-
-    LHS=preLHS(2:nsplines-1,2:nsplines-1)
-    RHS=preRHS(2:nsplines-1,2:nsplines-1)
+    call build_equation(l,kntpts,pts,k,LHS,RHS,abscissas,weights,nsplines,nqpts,iprint)
     
     if(iprint) then
         write(*,*) "Done."
@@ -141,8 +98,6 @@ program eigensplines
         nVR(:,i)=(/0.d0,VR(:,i),0.d0/)
     enddo
 
-    !write(*,*) "The sorted eigenvalues are:"
-    !call summarizearray(real(eigens),size(real(eigens)),5)
     write(*,*) "The negative eigenvalues are:"
     do i=1,size(eigens)
         if (real(eigens(i),kind=8)<0) then
@@ -164,27 +119,92 @@ program eigensplines
     if(iprint) then
         write(*,*) "Done."
     end if
+
+contains
+
+    subroutine build_equation(l,kntpts,pts,k,LHS,RHS,abscissas,weights,nsplines,nqpts,iprint)
+        integer,  parameter :: DP=kind(1.d0)
+        integer,  intent(in)                                        :: l, k, pts
+        logical,  intent(in)                                        :: iprint
+        integer,  intent(in)                                        :: nsplines, nqpts
+        real(DP), intent(in),    dimension(pts)                     :: kntpts
+        real(DP), intent(in),    dimension(nqpts)                   :: abscissas, weights
+        real(DP), intent(inout), dimension(nsplines-2,nsplines-2)   :: LHS, RHS
+        
+        real(DP), dimension(nqpts) :: dx
+        real(DP), dimension(nsplines,nsplines) :: preLHS,preRHS
+        real(DP), dimension(k,1) :: splinestore, dsplinestore
+        real(DP), dimension(k,k) :: intstorel, intstorer, matstore, dmatstore
+        real(DP) :: xm, xr, a, b, x, centrifugal, potential
+        integer :: left
+
+
+        !Zeroing memory
+        LHS=0.d0
+        RHS=0.d0
+        preLHS=0.d0
+        preRHS=0.d0
+        if(iprint) then
+            write(*,*) "Generating equation..."
+        end if
+        do left=k,nsplines !loop through all pairs of knot points for integration
+            intstorel=0.d0
+            intstorer=0.d0
+            matstore=0.d0
+            dmatstore=0.d0
+            splinestore=0.d0
+            dsplinestore=0.d0
+            a=kntpts(left)
+            b=kntpts(left+1)
+            xm=0.5d0*(b+a)
+            xr=0.5d0*(b-a)
+            dx=xr*abscissas
+            do i=1,k+1 !integration loop
+                x=dx(i)+xm
+                call getsplines(kntpts,pts,k,x,splinestore(:,1))
+                call getdsplines(kntpts,pts,k,x,dsplinestore(:,1),1)
+
+                matstore=matmul(splinestore,transpose(splinestore))
+                intstorer=intstorer+xr*weights(i)*matstore
+               
+                dmatstore=matmul(dsplinestore,transpose(dsplinestore))
+                dmatstore=dmatstore*.5d0
+                centrifugal=.5d0*real(l,kind=8)*(real(l,kind=8)+1.d0)/(x**2.d0)
+                potential=-real(Z,kind=8)/x
+                matstore=matstore*(centrifugal+potential)
+                intstorel=intstorel+xr*weights(i)*(dmatstore+matstore)
+            enddo
+            preLHS(left-k+1:left,left-k+1:left)=preLHS(left-k+1:left,left-k+1:left)+intstorel
+            preRHS(left-k+1:left,left-k+1:left)=preRHS(left-k+1:left,left-k+1:left)+intstorer
+        enddo
+
+
+        LHS=preLHS(2:nsplines-1,2:nsplines-1)
+        RHS=preRHS(2:nsplines-1,2:nsplines-1)
+    end subroutine build_equation
+
+    function resum_splines(kntpts,pts,k,expcoeffs,coeffs,x)
+        integer,  parameter :: DP=kind(1.d0)
+        integer,intent(in) :: pts,coeffs,k
+        real(DP),intent(in) :: x
+        real(DP),dimension(pts),intent(in) :: kntpts
+        real(DP),dimension(coeffs),intent(in) :: expcoeffs
+        real(DP),dimension(k) :: splines
+        real(DP) :: resum_splines
+        integer :: i,left
+
+        !Determine which knotpoint is the one directly to the left of x
+        do i=1,pts
+            if (kntpts(i)>x) then
+                left=i-1
+                exit
+            endif
+        enddo
+
+        call getsplines(kntpts,pts,k,x,splines)
+
+        resum_splines=sum(expcoeffs(left-k+1:left)*splines)
+    end function resum_splines
+
 end program eigensplines
 
-function resum_splines(kntpts,pts,k,expcoeffs,coeffs,x)
-    implicit none
-    integer,intent(in) :: pts,coeffs,k
-    real*8,intent(in) :: x
-    real*8,dimension(pts),intent(in) :: kntpts
-    real*8,dimension(coeffs),intent(in) :: expcoeffs
-    real*8,dimension(k) :: splines
-    real*8 :: resum_splines
-    integer :: i,left
-
-    !Determine which knotpoint is the one directly to the left of x
-    do i=1,pts
-        if (kntpts(i)>x) then
-            left=i-1
-            exit
-        endif
-    enddo
-
-    call getsplines(kntpts,pts,k,x,splines)
-
-    resum_splines=sum(expcoeffs(left-k+1:left)*splines)
-end function resum_splines
